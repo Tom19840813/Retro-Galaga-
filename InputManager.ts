@@ -17,6 +17,15 @@ export class InputManager {
     this.keys.delete(e.key);
   };
 
+  // For virtual buttons (Mobile)
+  public setVirtualKey(key: string, isDown: boolean) {
+    if (isDown) {
+      this.keys.add(key);
+    } else {
+      this.keys.delete(key);
+    }
+  }
+
   public isDown(key: string): boolean {
     return this.keys.has(key);
   }

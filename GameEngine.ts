@@ -1,3 +1,4 @@
+
 import { CanvasHTMLAttributes } from 'react';
 import { 
   CANVAS_WIDTH, 
@@ -32,7 +33,9 @@ export class GameEngine {
   private swarm: Swarm;
   private starfield: Starfield;
   private particles: ParticleSystem;
-  private input: InputManager;
+  
+  // Public for React UI Virtual Controls
+  public input: InputManager;
 
   // Callbacks for UI updates
   private onScoreUpdate: (score: number) => void;
@@ -107,12 +110,16 @@ export class GameEngine {
     const newProj = this.player.update(dt);
     if (newProj) this.projectiles.push(newProj);
 
-    // Update Swarm
-    this.swarm.update(dt, totalTime, this.player.pos);
+    // Update Swarm (Returns projectiles from enemies or boss)
+    const enemyProjs = this.swarm.update(dt, totalTime, this.player.pos);
+    if (enemyProjs.length > 0) {
+        this.projectiles = [...this.projectiles, ...enemyProjs];
+    }
 
     // Check Wave Clear
     if (this.swarm.isEmpty()) {
       this.wave++;
+      // Short pause before next wave?
       this.swarm.startWave(this.wave);
     }
 
@@ -127,33 +134,71 @@ export class GameEngine {
   private checkCollisions() {
     const playerBounds = this.player.getBounds();
 
-    // 1. Player Bullets hitting Enemies
+    // 1. Player Bullets hitting Enemies/Boss
     const playerBullets = this.projectiles.filter(p => p.type === EntityType.PROJECTILE_PLAYER);
     
     playerBullets.forEach(bullet => {
       const bBounds = bullet.getBounds();
+      let hit = false;
       
-      for (const enemy of this.swarm.enemies) {
-        if (checkCollision(bBounds, enemy.getBounds())) {
-          // Hit!
-          bullet.active = false;
-          enemy.active = false;
-          
-          // Effect
-          this.particles.createExplosion(enemy.pos, COLORS.ENEMY_BASIC);
-          soundManager.playExplosion();
-          
-          // Score
-          const pts = enemy.state === 2 ? 200 : 100; // More points for diving enemies
-          this.score += pts;
-          this.onScoreUpdate(this.score);
-          break; // Bullet destroys one enemy
+      // Check Boss
+      if (this.swarm.boss && this.swarm.boss.active) {
+        if (checkCollision(bBounds, this.swarm.boss.getBounds())) {
+            this.swarm.boss.takeDamage(1);
+            bullet.active = false;
+            hit = true;
+            soundManager.playExplosion(); // Use explosion sound for impact
+            
+            if (!this.swarm.boss.active) {
+                // Boss Defeated
+                this.particles.createExplosion(this.swarm.boss.pos, COLORS.ENEMY_BOSS, 100);
+                this.score += 5000;
+                this.onScoreUpdate(this.score);
+            }
         }
+      }
+
+      // Check Normal Enemies (only if bullet hasn't hit boss already)
+      if (!hit) {
+          for (const enemy of this.swarm.enemies) {
+            if (checkCollision(bBounds, enemy.getBounds())) {
+              bullet.active = false;
+              enemy.active = false;
+              
+              this.particles.createExplosion(enemy.pos, COLORS.ENEMY_BASIC);
+              soundManager.playExplosion();
+              
+              const pts = enemy.state === 2 ? 200 : 100; 
+              this.score += pts;
+              this.onScoreUpdate(this.score);
+              break; 
+            }
+          }
       }
     });
 
-    // 2. Enemy body hitting Player
+    // 2. Enemy/Boss Bullets hitting Player
     if (this.player.active) {
+        const enemyBullets = this.projectiles.filter(p => p.type === EntityType.PROJECTILE_ENEMY);
+        for (const bullet of enemyBullets) {
+            if (checkCollision(bullet.getBounds(), playerBounds)) {
+                bullet.active = false;
+                this.handlePlayerHit();
+                break;
+            }
+        }
+    }
+
+    // 3. Enemy body hitting Player
+    if (this.player.active) {
+      // Check Boss Body
+      if (this.swarm.boss && this.swarm.boss.active) {
+          if (checkCollision(playerBounds, this.swarm.boss.getBounds())) {
+              this.handlePlayerHit();
+          }
+      }
+      
+      // Check Minions
       for (const enemy of this.swarm.enemies) {
         if (checkCollision(playerBounds, enemy.getBounds())) {
           this.handlePlayerHit();
@@ -168,11 +213,10 @@ export class GameEngine {
     this.lives--;
     this.onLivesUpdate(this.lives);
     this.player.active = false;
-    this.particles.createExplosion(this.player.pos, COLORS.PLAYER, 50); // Big explosion
+    this.particles.createExplosion(this.player.pos, COLORS.PLAYER, 50); 
     soundManager.playExplosion();
 
     if (this.lives > 0) {
-      // Respawn delay
       setTimeout(() => {
         this.player.reset();
       }, 2000);

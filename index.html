@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Galactic Defender</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -12,6 +12,7 @@
         background-color: #050505;
         overflow: hidden;
         font-family: 'Press Start 2P', cursive;
+        touch-action: none; /* Prevent pull-to-refresh on mobile */
       }
 
       /* CRT Scanline Effect */

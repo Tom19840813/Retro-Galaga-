@@ -1,3 +1,4 @@
+
 export interface Vector2 {
   x: number;
   y: number;
@@ -20,6 +21,7 @@ export enum EntityType {
   PLAYER,
   ENEMY_BASIC,
   ENEMY_DIVER,
+  ENEMY_BOSS,
   PROJECTILE_PLAYER,
   PROJECTILE_ENEMY
 }
