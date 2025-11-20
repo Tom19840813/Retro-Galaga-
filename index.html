@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Galactic Defender</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+      
+      body {
+        background-color: #050505;
+        overflow: hidden;
+        font-family: 'Press Start 2P', cursive;
+      }
+
+      /* CRT Scanline Effect */
+      .scanlines::before {
+        content: " ";
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+        z-index: 10;
+        background-size: 100% 2px, 3px 100%;
+        pointer-events: none;
+      }
+      
+      .scanlines::after {
+        content: " ";
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        background: rgba(18, 16, 16, 0.1);
+        opacity: 0;
+        z-index: 10;
+        pointer-events: none;
+        animation: flicker 0.15s infinite;
+      }
+
+      @keyframes flicker {
+        0% { opacity: 0.027906; }
+        5% { opacity: 0.034149; }
+        10% { opacity: 0.029261; }
+        15% { opacity: 0.035286; }
+        20% { opacity: 0.028961; }
+        25% { opacity: 0.033272; }
+        30% { opacity: 0.033249; }
+        35% { opacity: 0.028232; }
+        40% { opacity: 0.033963; }
+        45% { opacity: 0.028313; }
+        50% { opacity: 0.029029; }
+        55% { opacity: 0.033902; }
+        60% { opacity: 0.032045; }
+        65% { opacity: 0.034079; }
+        70% { opacity: 0.032959; }
+        75% { opacity: 0.033597; }
+        80% { opacity: 0.028566; }
+        85% { opacity: 0.033749; }
+        90% { opacity: 0.030727; }
+        95% { opacity: 0.031614; }
+        100% { opacity: 0.034135; }
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
